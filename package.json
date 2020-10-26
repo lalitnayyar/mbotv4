@@ -1,0 +1,26 @@
+{
+  "name": "mbotv4",
+  "version": "1.0.0",
+  "description": "mbotv4",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lalitnayyar/mbotv4.git"
+  },
+  "keywords": [
+    "mbot"
+  ],
+  "author": "Lalit Nayyar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lalitnayyar/mbotv4/issues"
+  },
+  "homepage": "https://github.com/lalitnayyar/mbotv4#readme",
+  "dependencies": {
+    "botbuilder": "^4.10.4",
+    "restify": "^8.5.1"
+  }
+}

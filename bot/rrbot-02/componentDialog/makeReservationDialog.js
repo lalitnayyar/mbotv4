@@ -1,4 +1,4 @@
-const { WaterfallDialog, ComponentDialog } = require("botbuilder-dialogs");
+const { WaterfallDialog, ComponentDialog } = require('botbuilder-dialogs');
 
 const {
   ConfirmPrompt,
@@ -6,7 +6,7 @@ const {
   DateTimePrompt,
   NumberPrompt,
   TextPrompt,
-} = require("botbuilder-dialogs");
+} = require('botbuilder-dialogs');
 
 //const { DialogSet, DialogTurnStatus } = require("botbuilder-dialogs");
 const { DialogSet, Dialog, DialogTurnStatus } = require('botbuilder-dialogs');
@@ -16,7 +16,7 @@ const TEXT_PROMPT = "TEXT_PROMPT";
 const NUMBER_PROMPT = "NUMBER_PROMPT";
 const DATETIME_PROMPT = "DATETIME_PROMPT";
 const WATERFALL_DIALOG = "WATERFALL_DIALOG";
-const endDialog = "";
+const endDialog = false;
 
 class MakeReservationDialog extends ComponentDialog {
 
@@ -61,8 +61,10 @@ class MakeReservationDialog extends ComponentDialog {
   }
 
   async firstStep(step) {
-      console.log(step);
-    endDialog = false;
+      console.log('%1');
+    //endDialog = false;
+  //  endDialog = false;
+    console.log('%2');
     // Running a prompt here means the next Waterfalls will be run when the users resonse is received.
     return await step.prompt(
       CONFIRM_PROMPT,
@@ -102,7 +104,7 @@ class MakeReservationDialog extends ComponentDialog {
   async confirmStep(step) {
     step.values.time = step.result;
 
-    var msg = ` You have entered following values : \n Name: ${step.values.name} \n Participants: ${step.values.noOfParticipants} \n Date : ${step.values.date} \n Time : ${step.values.time}`;
+    var msg = ` You have entered following values : \n Name: ${step.values.name} \n Participants: ${step.values.noOfParticipants} \n Date : ${JSON.stringify(step.values.date)} \n Time : ${JSON.stringify(step.values.time)}`;
 
     await step.context.sendActivity(msg);
 

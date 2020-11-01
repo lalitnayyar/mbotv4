@@ -21,6 +21,7 @@
   "homepage": "https://github.com/lalitnayyar/mbotv4#readme",
   "dependencies": {
     "botbuilder": "^4.10.4",
-    "restify": "^8.5.1"
+    "restify": "^8.5.1",
+    "yo": "^3.1.1"
   }
 }

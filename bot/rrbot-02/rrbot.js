@@ -20,7 +20,14 @@ class RRBOT extends ActivityHandler {
       this.userState
     );
 
-   // this.conversationState = this.conversationState.createProperty('conservationData')
+    this.previousIntent = this.conversationState.createProperty(
+      "previousIntent"
+    );
+    this.conversationData = this.conversationState.createProperty(
+      "conversationData"
+    );
+
+    // this.conversationState = this.conversationState.createProperty('conservationData')
 
     // See https://aka.ms/about-bot-activity-message to learn more about the message and other activity types.
     this.onMessage(async (context, next) => {
@@ -29,6 +36,11 @@ class RRBOT extends ActivityHandler {
       await next();
     });
 
+    this.onDialog(async(context,next)=> {
+      await this.conversationState.saveChanges(context,false);
+      await this.userState.saveChanges(context,false);
+      await next()
+    })
     this.onMembersAdded(async (context, next) => {
       await this.sendWelcomeMessage(context);
       // By calling next() you ensure that the next BotHandler is run.
@@ -61,12 +73,28 @@ class RRBOT extends ActivityHandler {
   }
 
   async dispatchToIntentAsync(context) {
-    console.log(`  *** ${context.activity.text}***` )
-    switch (context.activity.text) {
+    console.log(`  *** ${context.activity.text}***`);
+    var currentIntent = '';
+    const previousIntent = await this.previousIntent.get(context, {});
+    const conversationData = await this.conversationData.get(context, {});
+    if (previousIntent.intentName && conversationData.endDialog === false) {
+      currentIntent = previousIntent.intentName;
+    } else if (
+      previousIntent.intentName &&
+      conversationData.endDialog === true
+    ) {
+      currentIntent = context.activity.text;
+    } else {
+      currentIntent = context.activity.text;
+      await this.previousIntent.set(context,{intentName: context.activity.text })
+    }
+    switch (currentIntent) {
       case "Make Reservation":
-        console.log(" *** Make Reservation Matched ***")
+        console.log(" *** Inside Make Reservation Matched ***");
+        await this.conversationData.set(context,{endDialog: false})
         await this.makeReservationDialog.run(context, this.dialogState);
-        break;
+        conversationData.endDialog = await this.makeReservationDialog.isDialogComplete();
+           break;
       default:
         console.log(" Did not match make reservation case");
         break;

@@ -16,7 +16,7 @@ const TEXT_PROMPT = "TEXT_PROMPT";
 const NUMBER_PROMPT = "NUMBER_PROMPT";
 const DATETIME_PROMPT = "DATETIME_PROMPT";
 const WATERFALL_DIALOG = "WATERFALL_DIALOG";
-const endDialog = false;
+var endDialog = '';
 
 class MakeReservationDialog extends ComponentDialog {
 
@@ -62,8 +62,7 @@ class MakeReservationDialog extends ComponentDialog {
 
   async firstStep(step) {
       console.log('%1');
-    //endDialog = false;
-  //  endDialog = false;
+    endDialog = false;
     console.log('%2');
     // Running a prompt here means the next Waterfalls will be run when the users resonse is received.
     return await step.prompt(
@@ -89,6 +88,7 @@ class MakeReservationDialog extends ComponentDialog {
   }
 
   async getDate(step) {
+    console.log(step);
     step.values.noOfParticipants = step.result;
     return await step.prompt(
       DATETIME_PROMPT,
@@ -120,6 +120,9 @@ class MakeReservationDialog extends ComponentDialog {
       await step.context.sendActivity(
         "Reservation successfuly made. Your reservation id is : 12345678"
       );
+      //endDialog = true;
+      //console.log('before endDialog'+endDialog);
+      //console.log(step);
       endDialog = true;
       return await step.endDialog();
     }
@@ -128,7 +131,7 @@ class MakeReservationDialog extends ComponentDialog {
     //this condition is our validation rule. you can also change the vlaue at this point
     return (
       promptContext.recognized.succeeded &&
-      promptContext.require.value > 1 &&
+      promptContext.recognized.value > 1 &&
       promptContext.recognized.value < 150
     );
   }

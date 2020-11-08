@@ -9,6 +9,11 @@ const {
   CancelReservationDialog,
 } = require("./componentDialog/cancelReservationDialog");
 
+//Initalize LUIS Recoginzer
+const { LuisRecognizer } = require("botbuilder-ai");
+
+//constructor method
+
 class RRBOT extends ActivityHandler {
   constructor(conversationState, userState) {
     super();
@@ -35,11 +40,30 @@ class RRBOT extends ActivityHandler {
       "conversationData"
     );
 
+    //LUIS
+    const dispatchRecognizer = new LuisRecognizer({
+      applicationId: process.env.LuisAppId,
+      endpointKey: process.env.LuisAPIKey,
+      endpoint: `https://${ process.env.LuisAPIHostName }.api.cognitive.microsoft.com`
+  }, {
+      includeAllIntents: true
+  }, true);
+
+
+
     // this.conversationState = this.conversationState.createProperty('conservationData')
 
     // See https://aka.ms/about-bot-activity-message to learn more about the message and other activity types.
     this.onMessage(async (context, next) => {
-      await this.dispatchToIntentAsync(context);
+//console.log(context);
+      const luisResult = await dispatchRecognizer.recognize(context);
+      //const recognizerResult = await dispatchRecognizer.recognize(context);
+      console.log(luisResult);
+      const intent = LuisRecognizer.topIntent(luisResult);
+
+      const entities = luisResult.entities;
+
+      await this.dispatchToIntentAsync(context, intent, entities);
 
       await next();
     });
@@ -80,45 +104,50 @@ class RRBOT extends ActivityHandler {
     await turnContext.sendActivity(reply);
   }
 
-  async dispatchToIntentAsync(context) {
+  async dispatchToIntentAsync(context, intent, entities) {
     console.log(`  *** ${context.activity.text}***`);
     var currentIntent = "";
     const previousIntent = await this.previousIntent.get(context, {});
     const conversationData = await this.conversationData.get(context, {});
+    console.log('******');
+    console.log('Intent : '+intent);
+    console.log('******');
+    console.log('Entities : '+entities);
+    console.log('******');
     if (previousIntent.intentName && conversationData.endDialog === false) {
       currentIntent = previousIntent.intentName;
     } else if (
       previousIntent.intentName &&
       conversationData.endDialog === true
     ) {
-      currentIntent = context.activity.text;
+      currentIntent = intent;
     } else {
-      currentIntent = context.activity.text;
+      currentIntent = intent;
       await this.previousIntent.set(context, {
         intentName: context.activity.text,
       });
     }
     switch (currentIntent) {
-      case "Make Reservation":
+      case "Make_Reservation":
         console.log(" *** Inside Make Reservation Matched ***");
         await this.conversationData.set(context, { endDialog: false });
         await this.makeReservationDialog.run(context, this.dialogState);
         conversationData.endDialog = await this.makeReservationDialog.isDialogComplete();
         if (conversationData.endDialog) {
           await this.previousIntent.set(context, {
-            intentName: null
+            intentName: null,
           });
           await this.sendSuggestActions(context);
         }
         break;
-      case "Cancel Reservation":
+      case "Cancel_Reservation":
         console.log(" *** Inside Cancel Reservation Matched ***");
         await this.conversationData.set(context, { endDialog: false });
         await this.cancelReservationDialog.run(context, this.dialogState);
         conversationData.endDialog = await this.cancelReservationDialog.isDialogComplete();
         if (conversationData.endDialog) {
           await this.previousIntent.set(context, {
-            intentName: null
+            intentName: null,
           });
           await this.sendSuggestActions(context);
         }

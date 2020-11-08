@@ -94,6 +94,9 @@ class RRBOT extends ActivityHandler {
         await this.conversationData.set(context,{endDialog: false})
         await this.makeReservationDialog.run(context, this.dialogState);
         conversationData.endDialog = await this.makeReservationDialog.isDialogComplete();
+        if(conversationData.endDialog){
+          await this.sendSuggestActions(context);
+        }
            break;
       default:
         console.log(" Did not match make reservation case");

@@ -5,6 +5,9 @@ const { ActivityHandler, MessageFactory } = require("botbuilder");
 const {
   MakeReservationDialog,
 } = require("./componentDialog/makeReservationDialog");
+const {
+  cancelReservationDialog,
+} = require("./componentDialog/cancelReservationDialog");
 
 class RRBOT extends ActivityHandler {
   constructor(conversationState, userState) {
@@ -20,6 +23,11 @@ class RRBOT extends ActivityHandler {
       this.userState
     );
 
+    // Global object
+    this.cancelReservationDialog = new cancelReservationDialog(
+      this.conversationState,
+      this.userState
+    );
     this.previousIntent = this.conversationState.createProperty(
       "previousIntent"
     );
@@ -36,11 +44,11 @@ class RRBOT extends ActivityHandler {
       await next();
     });
 
-    this.onDialog(async(context,next)=> {
-      await this.conversationState.saveChanges(context,false);
-      await this.userState.saveChanges(context,false);
-      await next()
-    })
+    this.onDialog(async (context, next) => {
+      await this.conversationState.saveChanges(context, false);
+      await this.userState.saveChanges(context, false);
+      await next();
+    });
     this.onMembersAdded(async (context, next) => {
       await this.sendWelcomeMessage(context);
       // By calling next() you ensure that the next BotHandler is run.
@@ -74,7 +82,7 @@ class RRBOT extends ActivityHandler {
 
   async dispatchToIntentAsync(context) {
     console.log(`  *** ${context.activity.text}***`);
-    var currentIntent = '';
+    var currentIntent = "";
     const previousIntent = await this.previousIntent.get(context, {});
     const conversationData = await this.conversationData.get(context, {});
     if (previousIntent.intentName && conversationData.endDialog === false) {
@@ -86,18 +94,29 @@ class RRBOT extends ActivityHandler {
       currentIntent = context.activity.text;
     } else {
       currentIntent = context.activity.text;
-      await this.previousIntent.set(context,{intentName: context.activity.text })
+      await this.previousIntent.set(context, {
+        intentName: context.activity.text,
+      });
     }
     switch (currentIntent) {
       case "Make Reservation":
         console.log(" *** Inside Make Reservation Matched ***");
-        await this.conversationData.set(context,{endDialog: false})
+        await this.conversationData.set(context, { endDialog: false });
         await this.makeReservationDialog.run(context, this.dialogState);
         conversationData.endDialog = await this.makeReservationDialog.isDialogComplete();
-        if(conversationData.endDialog){
+        if (conversationData.endDialog) {
           await this.sendSuggestActions(context);
         }
-           break;
+        break;
+      case "Cancel Reservation":
+        console.log(" *** Inside Cancel Reservation Matched ***");
+        await this.conversationData.set(context, { endDialog: false });
+        await this.cancelReservationDialog.run(context, this.dialogState);
+        conversationData.endDialog = await this.cancelReservationDialog.isDialogComplete();
+        if (conversationData.endDialog) {
+          await this.sendSuggestActions(context);
+        }
+        break;
       default:
         console.log(" Did not match make reservation case");
         break;

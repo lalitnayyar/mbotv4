@@ -10,6 +10,15 @@ const {
 
 //const { DialogSet, DialogTurnStatus } = require("botbuilder-dialogs");
 const { DialogSet, Dialog, DialogTurnStatus } = require('botbuilder-dialogs');
+// Adaptive card
+
+const {CardFactory} = require("botbuilder");
+const RestaurantCard = require("../resources/adaptiveCards/Restaurantcard.json");
+
+const CARDS = [
+    RestaurantCard
+];
+
 const CHOICE_PROMPT = "CHOICE_PROMPT";
 const CONFIRM_PROMPT = "CONFIRM_PROMPT";
 const TEXT_PROMPT = "TEXT_PROMPT";
@@ -57,28 +66,26 @@ class CancelReservationDialog extends ComponentDialog {
   }
 
   async firstStep(step) {
-      console.log('%1');
     endDialog = false;
-    console.log('%2');
     // Running a prompt here means the next Waterfalls will be run when the users resonse is received.
-    return await step.prompt(
-      CONFIRM_PROMPT,
-      "would you like to make a reservation?",
-      ["yes", "no"]
-    );
+    await step.context.sendActivity({
+        text: 'Enter reservation details for cancellation:',
+        attachments:[CardFactory.adaptiveCard(CARDS[0])]
+    })
+    return await step.prompt(TEXT_PROMPT,'');
   }
 
   
   async confirmStep(step) {
-    step.values.time = step.result;
+    step.values.reservationNo = step.result;
 
-    var msg = ` You have entered following values : \n Name: ${step.values.name} \n Participants: ${step.values.noOfParticipants} \n Date : ${JSON.stringify(step.values.date)} \n Time : ${JSON.stringify(step.values.time)}`;
+    var msg = ` You have entered following values : \n Reservation Number: ${step.values.reservationNo} `;
 
     await step.context.sendActivity(msg);
 
     return await step.prompt(
       CONFIRM_PROMPT,
-      "Are you sure that all values are correct and you want to make the reservations ?",
+      "Are you sure that all values are correct and you want to CANCEL the reservations ?",
       ["yes", "no"]
     );
   }
@@ -86,7 +93,7 @@ class CancelReservationDialog extends ComponentDialog {
   async summaryStep(step) {
     if (step.result === true) {
       await step.context.sendActivity(
-        "Reservation successfuly made. Your reservation id is : 12345678"
+        "Reservation successfuly cancelled. Your reservation id is : 12345678"
       );
       //endDialog = true;
       //console.log('before endDialog'+endDialog);
@@ -101,4 +108,4 @@ class CancelReservationDialog extends ComponentDialog {
     return endDialog;
   }
 }
-module.exports.cancelReservationDialog = cancelReservationDialog;
+module.exports.CancelReservationDialog = CancelReservationDialog;

@@ -6,7 +6,7 @@ const {
   MakeReservationDialog,
 } = require("./componentDialog/makeReservationDialog");
 const {
-  cancelReservationDialog,
+  CancelReservationDialog,
 } = require("./componentDialog/cancelReservationDialog");
 
 class RRBOT extends ActivityHandler {
@@ -24,7 +24,7 @@ class RRBOT extends ActivityHandler {
     );
 
     // Global object
-    this.cancelReservationDialog = new cancelReservationDialog(
+    this.cancelReservationDialog = new CancelReservationDialog(
       this.conversationState,
       this.userState
     );
@@ -105,6 +105,9 @@ class RRBOT extends ActivityHandler {
         await this.makeReservationDialog.run(context, this.dialogState);
         conversationData.endDialog = await this.makeReservationDialog.isDialogComplete();
         if (conversationData.endDialog) {
+          await this.previousIntent.set(context, {
+            intentName: null
+          });
           await this.sendSuggestActions(context);
         }
         break;
@@ -114,6 +117,9 @@ class RRBOT extends ActivityHandler {
         await this.cancelReservationDialog.run(context, this.dialogState);
         conversationData.endDialog = await this.cancelReservationDialog.isDialogComplete();
         if (conversationData.endDialog) {
+          await this.previousIntent.set(context, {
+            intentName: null
+          });
           await this.sendSuggestActions(context);
         }
         break;

@@ -80,6 +80,11 @@ class MakeReservationDialog extends ComponentDialog {
         "In what name reservation is to be made?"
       );
     }
+    if (step.result === false) {
+      await step.context.sendActivity("You choose not to go ahead with reservation.");
+      endDialog = true;
+      return await step.endDialog();
+    };
   }
 
   async getNumberOfParticipants(step) {

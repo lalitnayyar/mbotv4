@@ -45,7 +45,7 @@ class MakeReservationDialog extends ComponentDialog {
     this.initialDialogId = WATERFALL_DIALOG;
   }
 
-  async run(turnContext, accessor) {
+  async run(turnContext, accessor,entities) {
       console.log ( " running makereseravationdialog turncontext and accessor")
     const dialogSet = new DialogSet(accessor);
     dialogSet.add(this);
@@ -56,12 +56,14 @@ class MakeReservationDialog extends ComponentDialog {
     console.log(DialogTurnStatus.empty)
     console.log(this.id)
     if (results.status === DialogTurnStatus.empty) {
-      await dialogContext.beginDialog(this.id);
+      await dialogContext.beginDialog(this.id,entities);
     }
   }
 
   async firstStep(step) {
-      console.log('%1');
+  //  console.log('%1->'+step._info.options.noOfParticipants[0]);
+     step.values.noOfParticipants = step._info.options.noOfParticipants[0];
+  
     endDialog = false;
     console.log('%2');
     // Running a prompt here means the next Waterfalls will be run when the users resonse is received.
@@ -89,11 +91,15 @@ class MakeReservationDialog extends ComponentDialog {
 
   async getNumberOfParticipants(step) {
     step.values.name = step.result;
+    if(!step.values.noOfParticipants)
     return await step.prompt(NUMBER_PROMPT, "How many participants (0-150)?");
+     else 
+      return await step.continueDialog();
+    
   }
 
   async getDate(step) {
-    console.log(step);
+    if(!step.values.noOfParticipants)
     step.values.noOfParticipants = step.result;
     return await step.prompt(
       DATETIME_PROMPT,

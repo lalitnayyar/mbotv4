@@ -10,7 +10,7 @@ const {
 } = require("./componentDialog/cancelReservationDialog");
 
 //Initalize LUIS Recoginzer
-const { LuisRecognizer } = require("botbuilder-ai");
+const { LuisRecognizer, QnAMaker } = require("botbuilder-ai");
 
 //constructor method
 
@@ -49,7 +49,13 @@ class RRBOT extends ActivityHandler {
       includeAllIntents: true
   }, true);
 
+  const qnaMaker = new QnAMaker({
+    knowledgeBaseId : process.env.QnAKnowldgebaseId,
+    endpointKey: process.env.QnAEndpointKey,
+    host: process.env.QnAEndpointHostName
+  })
 
+  this.qnaMaker = qnaMaker
 
     // this.conversationState = this.conversationState.createProperty('conservationData')
 
@@ -121,17 +127,20 @@ class RRBOT extends ActivityHandler {
       conversationData.endDialog === true
     ) {
       currentIntent = intent;
-    } else {
+    } else if(intent =="None" && !previousIntent.intentName){
+      var result = await this.qnaMaker.getAnswers(context)
+      await context.sendActivity(`${result[0].answer}`)
+    }else {
       currentIntent = intent;
       await this.previousIntent.set(context, {
-        intentName: context.activity.text,
+        intentName: intent
       });
     }
     switch (currentIntent) {
       case "Make_Reservation":
         console.log(" *** Inside Make Reservation Matched ***");
         await this.conversationData.set(context, { endDialog: false });
-        await this.makeReservationDialog.run(context, this.dialogState);
+        await this.makeReservationDialog.run(context, this.dialogState,entities);
         conversationData.endDialog = await this.makeReservationDialog.isDialogComplete();
         if (conversationData.endDialog) {
           await this.previousIntent.set(context, {

@@ -51,9 +51,10 @@ class RRBOT extends ActivityHandler {
         const luisResult = await dispatchRecognizer.recognize(context)
         const intent = LuisRecognizer.topIntent(luisResult); 
        
-        
+        console.log('*** Luis Intent ****');
+        console.log(intent);
         const entities = luisResult.entities;
-
+        //await this.previousIntent.set(context,{intentName: intent});
         await this.dispatchToIntentAsync(context,intent,entities);
         
         await next();
@@ -100,21 +101,31 @@ class RRBOT extends ActivityHandler {
         const previousIntent = await this.previousIntent.get(context,{});
         const conversationData = await this.conversationData.get(context,{});   
 
+        console.log('**Start of Debug***');
+        console.log('**Previous Intent***');
+        console.log(previousIntent.intentName);
+        console.log('**Current Intent***');
+        console.log(intent);
+        console.log('**End of Debug***');
         if(previousIntent.intentName && conversationData.endDialog === false )
         {
            currentIntent = previousIntent.intentName;
+
 
         }
         else if (previousIntent.intentName && conversationData.endDialog === true)
         {
              currentIntent = intent;
+             
 
         }
-        else if(intent == "None" && !previousIntent.intentName)
+        else if(intent === "None" && !previousIntent.intentName  )
         {
-
-            var result = await this.qnaMaker.getAnswers(context)
+             console.log("*** Enter into qnamaker !!!! ")   
+            var result = await this.qnaMaker.getAnswers(context);
+            console.log(`${ result[0].answer}`);
             await context.sendActivity(`${ result[0].answer}`);
+            await context.sendActivity(`test message`);
             await this.sendSuggestedActions(context);
         }
         
@@ -122,6 +133,12 @@ class RRBOT extends ActivityHandler {
         {
             currentIntent = intent;
             await this.previousIntent.set(context,{intentName: intent});
+            console.log('**else Start of Debug***');
+            console.log('**Previous Intent***');
+            console.log(previousIntent.intentName);
+            console.log('**else Current Intent***');
+            console.log(intent);
+            console.log('**else End of Debug***');
 
         }
     switch(currentIntent)
